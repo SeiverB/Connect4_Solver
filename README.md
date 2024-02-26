@@ -31,6 +31,6 @@ the .jar file may then be executed from the command line by: java -jar game.jar
 
 
 
-BUGS -----------------------------------------------------------------------------------------------------
+## BUGS
 
 Though the opponent is found to be strong, being depth-limited means that it does not play perfectly.
