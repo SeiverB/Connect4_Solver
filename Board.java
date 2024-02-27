@@ -13,6 +13,8 @@ public class Board {
     public byte toPlay = 1;
     public byte opponent = 2;
 
+    public int lastMove = -1;
+
     public Byte[] numInEachColumn = new Byte[numColumns];
     public Byte[] board = new Byte[((numColumns + 1) * (numRows + 2)) + 1];
 
@@ -62,7 +64,6 @@ public class Board {
 
     // returns a clone of the board with the move made
     public Board makeMove(int x){
-
         Board newBoard = new Board();
         newBoard.numInEachColumn = this.numInEachColumn.clone();
         newBoard.board = this.board.clone();
@@ -71,7 +72,8 @@ public class Board {
         newBoard.board[index] = toPlay;
         newBoard.numInEachColumn[x]++;
         float newHeuristic = newBoard.getHeuristicForMove(row, x, toPlay);
-        
+        newBoard.lastMove = x;
+
         if(newBoard.gameOver){
             if(toPlay == 1){
             newBoard.whiteHeuristic = 100.0f;

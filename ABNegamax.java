@@ -24,11 +24,10 @@ public class ABNegamax {
             int move = moves.get(i);
             Board newBoard = board.makeMove(move);
             
-            // Immediately return insta wins. Not really effective.
-            //if(newBoard.gameOver == true){
-                //continue;
-                //return new ScoreMove(100f, move);
-            //}
+            // Immediately prune result if a winning move is playable
+            if(newBoard.gameOver == true){
+                return new ScoreMove(100f, move);
+            }
 
             // Recurse
             ScoreMove result = getBestMove(newBoard, currentDepth + 1, -beta, -Math.max(alpha, bestScore));
@@ -45,6 +44,11 @@ public class ABNegamax {
                 break;
             }
         }
+
+        if(currentDepth == 1){
+            System.out.println(new ScoreMove(bestScore, bestMove));
+        }
+
         return new ScoreMove(bestScore, bestMove);
     }
 

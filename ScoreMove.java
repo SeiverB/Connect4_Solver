@@ -8,4 +8,8 @@ public class ScoreMove {
         this.bestMove = bestMove;
     }
 
+    public String toString(){
+        return "[ScoreMove] Score: " + this.bestScore + " Move: " + this.bestMove;
+    }
+
 }

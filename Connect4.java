@@ -52,7 +52,7 @@ public class Connect4 extends JPanel implements MouseListener, MouseMotionListen
         Board.moveOrder = moveorder;
         this.board = new Board();
         this.board.initializeValues();
-        this.negamax = new ABNegamax(11);
+        this.negamax = new ABNegamax(12);
 
     }
 
@@ -64,11 +64,15 @@ public class Connect4 extends JPanel implements MouseListener, MouseMotionListen
             checkIfGameOver();
             playerTurn = false;
         }
+        System.out.printf("White Score: %f Black Score: %f\n", this.board.whiteHeuristic, this.board.blackHeuristic);
 
         if((gameState == 0) && playerTurn == false){
             doAIMove();
             checkIfGameOver();
         }
+        
+        System.out.printf("White Score: %f Black Score: %f\n", this.board.whiteHeuristic, this.board.blackHeuristic);
+
     }
 
     public Boolean checkValidMove(int move){
