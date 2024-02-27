@@ -7,8 +7,8 @@ public class Board {
     public int numColumns = 7;
     public int numRows = 6;
 
-    public float whiteHeuristic = 0;
-    public float blackHeuristic = 0;
+    public int whiteHeuristic = 0;
+    public int blackHeuristic = 0;
 
     public byte toPlay = 1;
     public byte opponent = 2;
@@ -81,16 +81,16 @@ public class Board {
         int index = 1 + (row) * (newBoard.numColumns + 1) + x;
         newBoard.board[index] = toPlay;
         newBoard.numInEachColumn[x]++;
-        float newHeuristic = newBoard.getHeuristicForMove(row, x, toPlay);
+        int newHeuristic = newBoard.getHeuristicForMove(row, x, toPlay);
 
         if(newBoard.gameOver){
             if(toPlay == 1){
-            newBoard.whiteHeuristic = 100.0f;
-            newBoard.blackHeuristic = 0.0f;
+            newBoard.whiteHeuristic = 1000;
+            newBoard.blackHeuristic = 0;
             }
             else{
-                newBoard.whiteHeuristic = 0.0f;
-                newBoard.blackHeuristic = 100.0f;
+                newBoard.whiteHeuristic = 0;
+                newBoard.blackHeuristic = 1000;
             }
             newBoard.toPlay = opponent;
             newBoard.opponent = toPlay;
@@ -98,8 +98,8 @@ public class Board {
         }
         
         
-        float oldHeuristic = this.getHeuristicForMove(row, x, toPlay);
-        float friendlyHeuristic = (newHeuristic - oldHeuristic);
+        int oldHeuristic = this.getHeuristicForMove(row, x, toPlay);
+        int friendlyHeuristic = (newHeuristic - oldHeuristic);
 
         //System.out.println("Friendly old: " + oldHeuristic);
         //System.out.println("Friendly new: " + newHeuristic);
@@ -107,7 +107,7 @@ public class Board {
 
         oldHeuristic = this.getHeuristicForMove(row, x, opponent);
         newHeuristic = newBoard.getHeuristicForMove(row, x, opponent);
-        float enemyHeuristic = (newHeuristic - oldHeuristic);
+        int enemyHeuristic = (newHeuristic - oldHeuristic);
 
         //System.out.println("Enemy old: " + oldHeuristic);
         //System.out.println("Enemy new: " + newHeuristic);
@@ -223,9 +223,9 @@ public class Board {
     }
     */
 
-    private float getHeuristicForSequence_v2(int start, int end, int iterator, byte move){
-        float adjacencyValues[] = {0f, 0.1f, 0.2f, 0.3f, 0.5f, 0.4f, 0.9f};
-        float rowresult = 0;
+    private int getHeuristicForSequence_v2(int start, int end, int iterator, byte move){
+        int adjacencyValues[] = {0, 1, 2, 3, 5, 4, 9};
+        int rowresult = 0;
         
         int left_freedom = 0;
 
@@ -264,7 +264,7 @@ public class Board {
                 // We have won, return max heuristic value.
                 if(num_adjacent >= 4){
                     this.gameOver = true;
-                    return 100f;
+                    return 1000;
                 }
             }
             // If tile is enemy or wall
@@ -283,11 +283,11 @@ public class Board {
             }
         }
 
-        float result = rowresult;
+        int result = rowresult;
         return result;
     }
 
-    public float evaluate(){
+    public int evaluate(){
         if(toPlay == 1){
             return this.whiteHeuristic - this.blackHeuristic;
         }
@@ -296,9 +296,9 @@ public class Board {
         }
     }
 
-    private float getHeuristicForMove(int row, int col, byte move){
-        float total = 0;
-        float result = 0;
+    private int getHeuristicForMove(int row, int col, byte move){
+        int total = 0;
+        int result = 0;
 
         // in here, col indexed starting 0, row indexed starting 1 btw
 

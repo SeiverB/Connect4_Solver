@@ -9,7 +9,7 @@ public class ABNegamax {
         this.maxDepth = maxDepth;
     }
     
-    public ScoreMove getBestMove(Board board, int currentDepth, float alpha, float beta){
+    public ScoreMove getBestMove(Board board, int currentDepth, int alpha, int beta){
 
         // Check if done recursing
         if(board.gameOver || (currentDepth == this.maxDepth)){
@@ -17,7 +17,7 @@ public class ABNegamax {
         }
 
         Integer bestMove = null;
-        float bestScore = Float.NEGATIVE_INFINITY;
+        int bestScore = -99999999;
 
         // Go through each move
         ArrayList<Integer> moves = board.getPossibleMoves();
@@ -50,12 +50,12 @@ public class ABNegamax {
             
             // Immediately prune result if a winning move is playable
             if(newBoard.gameOver == true){
-                return new ScoreMove(100f, move);
+                return new ScoreMove(1000, move);
             }
 
             // Recurse
             ScoreMove result = getBestMove(newBoard, currentDepth + 1, -beta, -Math.max(alpha, bestScore));
-            float currentScore = -result.bestScore; 
+            int currentScore = -result.bestScore; 
             
             // Update best score if we find better
             if(currentScore > bestScore){

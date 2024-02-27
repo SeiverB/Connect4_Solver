@@ -1,9 +1,9 @@
 public class ScoreMove {
     
-    public float bestScore;
+    public int bestScore;
     public Integer bestMove;
 
-    public ScoreMove(float bestScore, Integer bestMove){
+    public ScoreMove(int bestScore, Integer bestMove){
         this.bestScore = bestScore;
         this.bestMove = bestMove;
     }

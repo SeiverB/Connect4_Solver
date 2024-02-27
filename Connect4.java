@@ -52,7 +52,7 @@ public class Connect4 extends JPanel implements MouseListener, MouseMotionListen
         Board.moveOrder = moveorder;
         this.board = new Board();
         this.board.initializeValues();
-        this.negamax = new ABNegamax(8);
+        this.negamax = new ABNegamax(9);
 
     }
 
@@ -64,14 +64,14 @@ public class Connect4 extends JPanel implements MouseListener, MouseMotionListen
             checkIfGameOver();
             playerTurn = false;
         }
-        System.out.printf("White Score: %f Black Score: %f\n", this.board.whiteHeuristic, this.board.blackHeuristic);
+        System.out.printf("White Score: %d Black Score: %d\n", this.board.whiteHeuristic, this.board.blackHeuristic);
 
         if((gameState == 0) && playerTurn == false){
             doAIMove();
             checkIfGameOver();
-        }
+        } 
         
-        System.out.printf("White Score: %f Black Score: %f\n", this.board.whiteHeuristic, this.board.blackHeuristic);
+        System.out.printf("White Score: %d Black Score: %d\n", this.board.whiteHeuristic, this.board.blackHeuristic);
 
     }
 
@@ -93,13 +93,13 @@ public class Connect4 extends JPanel implements MouseListener, MouseMotionListen
     }
 
     public void doAIMove(){
-        ScoreMove result = this.negamax.getBestMove(this.board, 0, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY);
+        ScoreMove result = this.negamax.getBestMove(this.board, 0, -999999999, 999999999);
         Integer move = null;
         // The AI prolly gave up, just try and play something that won't immediately lose. Stall.
         if(result.bestMove == null){
             int temp = this.negamax.maxDepth;
             this.negamax.maxDepth = 4;
-            result = this.negamax.getBestMove(this.board, 0, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY);
+            result = this.negamax.getBestMove(this.board, 0, -999999999, 999999999);
             move = result.bestMove;
             this.negamax.maxDepth = temp;
             if(move == null){
