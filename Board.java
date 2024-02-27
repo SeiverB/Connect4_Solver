@@ -13,8 +13,6 @@ public class Board {
     public byte toPlay = 1;
     public byte opponent = 2;
 
-    public int lastMove = -1;
-
     public Byte[] numInEachColumn = new Byte[numColumns];
     public Byte[] board = new Byte[((numColumns + 1) * (numRows + 2)) + 1];
 
@@ -28,13 +26,25 @@ public class Board {
 
     // order moves from center, outwards.
     public ArrayList<Integer> getPossibleMoves(){
+
         ArrayList<Integer> result = new ArrayList<Integer>();
+
+        /* old move ordering, from center outwards. 
+        Replaced with better move ordering based on heuristic
+
         for(int i = 0; i < numColumns; i++){
             int a = Board.moveOrder[i];
             if(numInEachColumn[a] < numRows){
                 result.add(a);
             }
+        }*/
+
+        for(int i = 0; i < numColumns; i++){
+            if(numInEachColumn[i] < numRows){
+                result.add(i);
+            }
         }
+
         return result;
     }
 
@@ -72,7 +82,6 @@ public class Board {
         newBoard.board[index] = toPlay;
         newBoard.numInEachColumn[x]++;
         float newHeuristic = newBoard.getHeuristicForMove(row, x, toPlay);
-        newBoard.lastMove = x;
 
         if(newBoard.gameOver){
             if(toPlay == 1){

@@ -52,7 +52,7 @@ public class Connect4 extends JPanel implements MouseListener, MouseMotionListen
         Board.moveOrder = moveorder;
         this.board = new Board();
         this.board.initializeValues();
-        this.negamax = new ABNegamax(12);
+        this.negamax = new ABNegamax(8);
 
     }
 

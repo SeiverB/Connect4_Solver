@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class ABNegamax {
 
@@ -20,9 +21,32 @@ public class ABNegamax {
 
         // Go through each move
         ArrayList<Integer> moves = board.getPossibleMoves();
+
+        // List of boards and their moves for move Sorting
+        ArrayList<BoardMove> boardMoves = new ArrayList<BoardMove>();
+
         for(int i = 0; i < moves.size(); i++){
             int move = moves.get(i);
             Board newBoard = board.makeMove(move);
+            BoardMove newBoardMove = new BoardMove(newBoard, move);
+            boardMoves.add(newBoardMove);
+        }
+
+        // Sort boardMoves according to their heuristic
+        Collections.sort(boardMoves, new BoardMoveComparator());
+
+        /*
+        System.out.println("MOVES:");
+        for(int i = 0; i < boardMoves.size(); i++){
+            System.out.println(boardMoves.get(i));
+        }
+        */
+
+        for(int i = 0; i < boardMoves.size(); i++){
+            BoardMove currentBoardMove = boardMoves.get(i);
+
+            int move = currentBoardMove.move;
+            Board newBoard = currentBoardMove.board;
             
             // Immediately prune result if a winning move is playable
             if(newBoard.gameOver == true){
