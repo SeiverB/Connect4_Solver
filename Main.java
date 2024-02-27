@@ -48,18 +48,6 @@ public class Main {
 		//show the window
         f.setVisible(true);
 
-
-        /* TESTGAME
-        Connect4 game2 = new Connect4();
-        game2.startGame();
-        game2.playMove(3);
-        System.out.printf("white heuristic: %f\n",game2.board.whiteHeuristic);
-        game2.playMove(0);
-        game2.playMove(3);
-        System.out.printf("white heuristic: %f\n",game2.board.whiteHeuristic);
-        game2.playMove(3);
-        System.out.printf("white heuristic: %f\n",game2.board.whiteHeuristic);
-        */
 	}
 
 }

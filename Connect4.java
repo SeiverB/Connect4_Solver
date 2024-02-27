@@ -12,7 +12,7 @@ public class Connect4 extends JPanel implements MouseListener, MouseMotionListen
 
 
     // Game board
-    public Board board;
+    private Board board;
 
     // Board dimensions
     public int boardx, boardy, boardwidth, boardheight;
@@ -52,7 +52,7 @@ public class Connect4 extends JPanel implements MouseListener, MouseMotionListen
         Board.moveOrder = moveorder;
         this.board = new Board();
         this.board.initializeValues();
-        this.negamax = new ABNegamax(12);
+        this.negamax = new ABNegamax(11);
 
     }
 
