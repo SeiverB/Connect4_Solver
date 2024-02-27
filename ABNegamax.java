@@ -28,6 +28,12 @@ public class ABNegamax {
         for(int i = 0; i < moves.size(); i++){
             int move = moves.get(i);
             Board newBoard = board.makeMove(move);
+
+            // Immediately prune result if a winning move is playable
+            if(newBoard.gameOver){
+                return new ScoreMove(1000, move);
+            }
+
             BoardMove newBoardMove = new BoardMove(newBoard, move);
             boardMoves.add(newBoardMove);
         }
@@ -48,11 +54,6 @@ public class ABNegamax {
             int move = currentBoardMove.move;
             Board newBoard = currentBoardMove.board;
             
-            // Immediately prune result if a winning move is playable
-            if(newBoard.gameOver == true){
-                return new ScoreMove(1000, move);
-            }
-
             // Recurse
             ScoreMove result = getBestMove(newBoard, currentDepth + 1, -beta, -Math.max(alpha, bestScore));
             int currentScore = -result.bestScore; 
