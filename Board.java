@@ -4,8 +4,8 @@ import java.util.ArrayList;
 
 public class Board {
     
-    public int numColumns = 7;
-    public int numRows = 6;
+    public static int numColumns = 7;
+    public static int numRows = 6;
 
     public int whiteHeuristic = 0;
     public int blackHeuristic = 0;
@@ -18,7 +18,8 @@ public class Board {
 
     public Boolean gameOver = false;
 
-    public static int[] moveOrder;
+    // Used for ordering moves from center, outwards.
+    // public static int[] moveOrder = {3, 4, 2, 5, 1, 6, 0};
 
     Board(){
 
@@ -77,8 +78,8 @@ public class Board {
         Board newBoard = new Board();
         newBoard.numInEachColumn = this.numInEachColumn.clone();
         newBoard.board = this.board.clone();
-        int row = newBoard.numRows - newBoard.numInEachColumn[x];
-        int index = 1 + (row) * (newBoard.numColumns + 1) + x;
+        int row = Board.numRows - newBoard.numInEachColumn[x];
+        int index = 1 + (row) * (Board.numColumns + 1) + x;
         newBoard.board[index] = toPlay;
         newBoard.numInEachColumn[x]++;
         int newHeuristic = newBoard.getHeuristicForMove(row, x, toPlay);
@@ -303,20 +304,19 @@ public class Board {
         // in here, col indexed starting 0, row indexed starting 1 btw
 
         // recalculate row
-        int startIndex = 1 + (this.numColumns + 1) * (row);
-        int endIndex = startIndex + this.numColumns;
-        int iterator = 1;
+        int startIndex = 1 + (Board.numColumns + 1) * (row);
+        int endIndex = startIndex + Board.numColumns;
 
-        result = getHeuristicForSequence_v2(startIndex, endIndex, iterator, move);
+        result = getHeuristicForSequence_v2(startIndex, endIndex, 1, move);
         if(result == 100){
             return 100;
         }
         total += result;
         
         // recalculate col
-        startIndex = col + this.numColumns + 2;
-        iterator = this.numColumns + 1;
-        endIndex = startIndex + (this.numRows)*iterator;
+        startIndex = col + Board.numColumns + 2;
+        int iterator = Board.numColumns + 1;
+        endIndex = startIndex + (Board.numRows)*iterator;
         result = getHeuristicForSequence_v2(startIndex, endIndex, iterator, move);
         if(result == 100){
             return 100;
@@ -337,11 +337,11 @@ public class Board {
         if((a + b + 1) >= 4){
             int diagCol = col + a;
             int diagRow = row - a;
-            startIndex = 2 + this.numColumns + diagCol + (diagRow * (this.numColumns + 1));
+            startIndex = 2 + Board.numColumns + diagCol + (diagRow * (Board.numColumns + 1));
             diagCol = col - b - 1;
             diagRow = row + b + 1;
-            endIndex = 2 + this.numColumns + diagCol + (diagRow * (this.numColumns + 1));
-            iterator = this.numColumns;
+            endIndex = 2 + Board.numColumns + diagCol + (diagRow * (Board.numColumns + 1));
+            iterator = Board.numColumns;
             result = getHeuristicForSequence_v2(startIndex, endIndex, iterator, move);
             if(result == 100){
                 return 100;
@@ -357,11 +357,11 @@ public class Board {
         if((a + b + 1) >= 4){
             int diagCol = col - a;
             int diagRow = row - a;
-            startIndex = 2 + this.numColumns + diagCol + (diagRow * (this.numColumns + 1));
+            startIndex = 2 + Board.numColumns + diagCol + (diagRow * (Board.numColumns + 1));
             diagCol = col + b + 1;
             diagRow = row + b + 1;
-            endIndex = 2 + this.numColumns + diagCol + (diagRow * (this.numColumns + 1));
-            iterator = this.numColumns + 2;
+            endIndex = 2 + Board.numColumns + diagCol + (diagRow * (Board.numColumns + 1));
+            iterator = Board.numColumns + 2;
             result = getHeuristicForSequence_v2(startIndex, endIndex, iterator, move);
             if(result == 100){
                 return 100;
@@ -384,7 +384,7 @@ public class Board {
         float yoffset = y;
         for(int i = 0; i < size; i++){
             int a = Math.floorDiv(i, numColumns);
-            a = i + (this.numColumns + 2) + a;
+            a = i + (Board.numColumns + 2) + a;
             switch(this.board[a]){
                 case 0:
                     g.setColor(Color.DARK_GRAY);

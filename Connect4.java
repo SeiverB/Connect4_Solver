@@ -48,8 +48,6 @@ public class Connect4 extends JPanel implements MouseListener, MouseMotionListen
     }
 
     public void startGame(){
-        int[] moveorder = {3, 4, 2, 5, 1, 6, 0};
-        Board.moveOrder = moveorder;
         this.board = new Board();
         this.board.initializeValues();
         this.negamax = new ABNegamax(9);
