@@ -6,6 +6,9 @@ public class Board {
     
     public static int numColumns = 7;
     public static int numRows = 6;
+    
+    // TODO: should be calculated programatically
+    public static int numDiags = 6;
 
     public int whiteHeuristic = 0;
     public int blackHeuristic = 0;
@@ -16,6 +19,7 @@ public class Board {
     public Byte[] numInEachColumn = new Byte[numColumns];
     public Byte[] board = new Byte[((numColumns + 1) * (numRows + 2)) + 1];
 
+    
     public Boolean gameOver = false;
 
     // Used for ordering moves from center, outwards.
@@ -52,8 +56,15 @@ public class Board {
 
     public void initializeValues(){
 
+        // Initialize array keeping track of number of pieces in each vertical column
         for(int i = 0; i < numColumns; i++){
             numInEachColumn[i] = (byte)0;
+        }
+
+        // Initialize array which caches the last-known heuristic of each position
+        for(int i = 0; i < (numColumns * numRows); i++){
+            friendlyHeus[i] = (byte)0;
+            enemyHeus[i] = (byte)0;
         }
 
         int a = 1 + ((numColumns + 1) * (numRows + 1));
@@ -74,16 +85,35 @@ public class Board {
     } 
 
     // returns a clone of the board with the move made
-    public Board makeMove(int x){
+    public Board makeMove(int col){
+
         Board newBoard = new Board();
         newBoard.numInEachColumn = this.numInEachColumn.clone();
+        newBoard.friendlyHeus = this.enemyHeus.clone();
+        newBoard.enemyHeus = this.friendlyHeus.clone();
         newBoard.board = this.board.clone();
-        int row = Board.numRows - newBoard.numInEachColumn[x];
-        int index = 1 + (row) * (Board.numColumns + 1) + x;
-        newBoard.board[index] = toPlay;
-        newBoard.numInEachColumn[x]++;
-        int newHeuristic = newBoard.getHeuristicForMove(row, x, toPlay);
+        
+        // Find relevant row that the piece will fall on, accounting for pieces already in the column
+        int row = Board.numRows - newBoard.numInEachColumn[col];
 
+        // Get the index of where the piece landed
+        int index = 1 + (row) * (Board.numColumns + 1) + col;
+
+        // Place chip into newBoard
+        newBoard.board[index] = toPlay;
+        newBoard.numInEachColumn[col]++;
+
+        // Reverse toPlay and opponent for newBoard
+        newBoard.toPlay = opponent;
+        newBoard.opponent = toPlay;
+
+        // The index that will be used to read old heuristic values for given [row/col/diags] set
+        int heuIndex = col + (row-1)*numColumns;
+
+        // (1) Calculate difference in Heuristic for the friendly pieces
+        int newHeuristic = newBoard.getHeuristicForMove(row, col, toPlay);
+
+        // Check if new board has gameOver, if so we don't need to calculate anything further.
         if(newBoard.gameOver){
             if(toPlay == 1){
             newBoard.whiteHeuristic = 1000;
@@ -93,22 +123,30 @@ public class Board {
                 newBoard.whiteHeuristic = 0;
                 newBoard.blackHeuristic = 1000;
             }
-            newBoard.toPlay = opponent;
-            newBoard.opponent = toPlay;
             return newBoard;
         }
-        
-        
-        int oldHeuristic = this.getHeuristicForMove(row, x, toPlay);
+
+        newBoard.enemyHeus[heuIndex] = (byte)newHeuristic;
+
+        // The old heuristic from the current board that will be applied to the new board
+        // We use the ENEMY heuristic from the old board, as we are updating the NEW board's friendly value.
+        // As the old board's enemy value = The new board's friendly value.
+        int oldHeuristic = this.enemyHeus[heuIndex];
         int friendlyHeuristic = (newHeuristic - oldHeuristic);
 
         //System.out.println("Friendly old: " + oldHeuristic);
         //System.out.println("Friendly new: " + newHeuristic);
         //System.out.println("Change: " + friendlyHeuristic);
 
-        oldHeuristic = this.getHeuristicForMove(row, x, opponent);
-        newHeuristic = newBoard.getHeuristicForMove(row, x, opponent);
+        // (2) Calculate difference in Heuristic for enemy pieces
+
+        // We use the FRIENDLY heuristic from the OLD board, as we are updating the NEW board's ENEMY value.
+        // As the old board's friendly value = The new board's enemy value.
+        oldHeuristic = this.friendlyHeus[heuIndex];
+        newHeuristic = newBoard.getHeuristicForMove(row, col, opponent);
         int enemyHeuristic = (newHeuristic - oldHeuristic);
+        
+        newBoard.friendlyHeus[heuIndex] = (byte)newHeuristic;
 
         //System.out.println("Enemy old: " + oldHeuristic);
         //System.out.println("Enemy new: " + newHeuristic);
@@ -122,9 +160,6 @@ public class Board {
             newBoard.whiteHeuristic += enemyHeuristic + this.whiteHeuristic;
             newBoard.blackHeuristic += friendlyHeuristic + this.blackHeuristic;
         }
-
-        newBoard.toPlay = opponent;
-        newBoard.opponent = toPlay;
 
         return newBoard;
     }
@@ -297,8 +332,14 @@ public class Board {
         }
     }
 
-    private int getHeuristicForMove(int row, int col, byte move){
-        int total = 0;
+    /*
+    private int updateHeuristicForMove(Board oldBoard, int row, int col){
+        
+        int enemyNewTotal = 0;
+        int enemyOldTotal = 0;
+        int friendlyNewTotal = 0;
+        int friendlyOldTotal = 0;
+
         int result = 0;
 
         // in here, col indexed starting 0, row indexed starting 1 btw
@@ -307,12 +348,12 @@ public class Board {
         int startIndex = 1 + (Board.numColumns + 1) * (row);
         int endIndex = startIndex + Board.numColumns;
 
-        result = getHeuristicForSequence_v2(startIndex, endIndex, 1, move);
+        result = oldBoard.getHeuristicForSequence_v2(startIndex, endIndex, 1, move);
         if(result == 100){
             return 100;
         }
         total += result;
-        
+
         // recalculate col
         startIndex = col + Board.numColumns + 2;
         int iterator = Board.numColumns + 1;
@@ -365,6 +406,83 @@ public class Board {
             result = getHeuristicForSequence_v2(startIndex, endIndex, iterator, move);
             if(result == 100){
                 return 100;
+            }
+            total += result;
+        }
+
+        return total;
+
+    }
+    */
+
+    private int getHeuristicForMove(int row, int col, byte move){
+        int total = 0;
+        int result = 0;
+
+        // in here, col indexed starting 0, row indexed starting 1 btw
+
+        // recalculate row
+        int startIndex = 1 + (Board.numColumns + 1) * (row);
+        int endIndex = startIndex + Board.numColumns;
+
+        result = getHeuristicForSequence_v2(startIndex, endIndex, 1, move);
+        if(result == 1000){
+            return 1000;
+        }
+        total += result;
+        
+        // recalculate col
+        startIndex = col + Board.numColumns + 2;
+        int iterator = Board.numColumns + 1;
+        endIndex = startIndex + (Board.numRows)*iterator;
+        result = getHeuristicForSequence_v2(startIndex, endIndex, iterator, move);
+        if(result == 1000){
+            return 1000;
+        }
+        total += result;
+
+        // now col indexed starting 0, row indexed starting 0 btw
+        row = row - 1;
+
+        // recalculate diag(+) if present
+
+        // How many cells are diagonally going up right
+        int a = Math.min(numColumns - (col + 1), row);
+        // How many cells are diagonally going down left
+        int b = Math.min(numRows - (row + 1), col);
+
+        // If we have 4 diagonal tiles, including current tile
+        if((a + b + 1) >= 4){
+            int diagCol = col + a;
+            int diagRow = row - a;
+            startIndex = 2 + Board.numColumns + diagCol + (diagRow * (Board.numColumns + 1));
+            diagCol = col - b - 1;
+            diagRow = row + b + 1;
+            endIndex = 2 + Board.numColumns + diagCol + (diagRow * (Board.numColumns + 1));
+            iterator = Board.numColumns;
+            result = getHeuristicForSequence_v2(startIndex, endIndex, iterator, move);
+            if(result == 1000){
+                return 1000;
+            }
+            total += result;
+        }
+
+        // recalculate diag(-) if present
+        // How many cells are diagonally going up left
+        a = Math.min(col, row);  
+        // How many cells are diagonally going down right
+        b = Math.min(numRows - (row + 1), numColumns - (col+1));
+        if((a + b + 1) >= 4){
+            int diagCol = col - a;
+            int diagRow = row - a;
+            startIndex = 2 + Board.numColumns + diagCol + (diagRow * (Board.numColumns + 1));
+            diagCol = col + b + 1;
+            diagRow = row + b + 1;
+            endIndex = 2 + Board.numColumns + diagCol + (diagRow * (Board.numColumns + 1));
+            iterator = Board.numColumns + 2;
+            result = getHeuristicForSequence_v2(startIndex, endIndex, iterator, move);
+            if(result == 1000){
+                return 1000;
             }
             total += result;
         }

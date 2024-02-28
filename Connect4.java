@@ -61,15 +61,18 @@ public class Connect4 extends JPanel implements MouseListener, MouseMotionListen
             //doAIMove();
             checkIfGameOver();
             playerTurn = false;
+            System.out.printf("White Score: %d Black Score: %d\n", this.board.whiteHeuristic, this.board.blackHeuristic);
+            System.out.printf("White HEU Score: %d Black HEU Score: %d\n", this.board.enemyHeus[38], this.board.friendlyHeus[38]);
         }
-        System.out.printf("White Score: %d Black Score: %d\n", this.board.whiteHeuristic, this.board.blackHeuristic);
-
+        
+        
         if((gameState == 0) && playerTurn == false){
             doAIMove();
             checkIfGameOver();
         } 
         
         System.out.printf("White Score: %d Black Score: %d\n", this.board.whiteHeuristic, this.board.blackHeuristic);
+        System.out.printf("White HEU Score: %d Black HEU Score: %d\n", this.board.friendlyHeus[38], this.board.enemyHeus[38]);
 
     }
 
