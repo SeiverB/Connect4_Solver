@@ -39,7 +39,6 @@ public class Board {
     }
 
 
-    // TODO: Implement functionality for this to also detect 3-in-a-rows
     // Should return a list of moves that create 3-in-a-rows for re-ordering. 
     public LinkedList<Integer> orderMoves(LinkedList<Integer> moves){
 
