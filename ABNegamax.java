@@ -70,10 +70,6 @@ public class ABNegamax {
             }
         }
 
-        if(currentDepth == 1){
-            System.out.println(new ScoreMove(bestScore, bestMove));
-        }
-
         return new ScoreMove(bestScore, bestMove);
     }
 

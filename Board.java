@@ -1,6 +1,7 @@
 import java.awt.Color;
 import java.awt.Graphics;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Board {
     
@@ -10,8 +11,7 @@ public class Board {
     // TODO: should be calculated programatically
     public static int numDiags = 6;
 
-    public int whiteHeuristic = 0;
-    public int blackHeuristic = 0;
+    public int heuristic = 0;
 
     public byte toPlay = 1;
     public byte opponent = 2;
@@ -19,11 +19,16 @@ public class Board {
     public Byte[] numInEachColumn = new Byte[numColumns];
     public Byte[] board = new Byte[((numColumns + 1) * (numRows + 2)) + 1];
 
+    // heuristics for each row, column, and diag.
+    public byte[] rowH = new byte[numRows];
+    public byte[] colH = new byte[numColumns];
+    public byte[] diagPH = new byte[numDiags];
+    public byte[] diagNH = new byte[numDiags];
     
     public Boolean gameOver = false;
 
     // Used for ordering moves from center, outwards.
-    // public static int[] moveOrder = {3, 4, 2, 5, 1, 6, 0};
+    public static int[] moveOrder = {3, 4, 2, 5, 1, 6, 0};
 
     Board(){
 
@@ -61,11 +66,11 @@ public class Board {
             numInEachColumn[i] = (byte)0;
         }
 
-        // Initialize array which caches the last-known heuristic of each position
-        for(int i = 0; i < (numColumns * numRows); i++){
-            friendlyHeus[i] = (byte)0;
-            enemyHeus[i] = (byte)0;
-        }
+        // Intialize heuristic arrays to 0
+        Arrays.fill(rowH, (byte)0);
+        Arrays.fill(colH, (byte)0);
+        Arrays.fill(diagPH, (byte)0);
+        Arrays.fill(diagNH, (byte)0);
 
         int a = 1 + ((numColumns + 1) * (numRows + 1));
         for(int i = 0; i < board.length; i++){
@@ -82,17 +87,41 @@ public class Board {
         byte temp = toPlay;
         toPlay = opponent;
         opponent = temp;
-    } 
+    }
+
+    // TODO: this is hardcoded for our current gridSize. Needs fixing to extrapolate to all like the rest of the code
+    public int getDiagP(int row, int col){
+        int result = row + col - 3;
+        if((result >= 0) && (result <= 5)){
+            return result;
+        }
+        return -1;
+    }
+
+    public int getDiagN(int row, int col){
+        int result = row - col + 3;
+        if((result >= 0) && (result <= 5)){
+            return result;
+        }
+        return -1;
+    }
 
     // returns a clone of the board with the move made
     public Board makeMove(int col){
 
         Board newBoard = new Board();
         newBoard.numInEachColumn = this.numInEachColumn.clone();
-        newBoard.friendlyHeus = this.enemyHeus.clone();
-        newBoard.enemyHeus = this.friendlyHeus.clone();
+        
         newBoard.board = this.board.clone();
         
+        // Clone and invert all heuristics
+        newBoard.colH = cloneAndInvert(colH);
+        newBoard.rowH = cloneAndInvert(rowH);
+        newBoard.diagPH = cloneAndInvert(diagPH);
+        newBoard.diagNH = cloneAndInvert(diagNH);
+
+        newBoard.heuristic = -this.heuristic;
+
         // Find relevant row that the piece will fall on, accounting for pieces already in the column
         int row = Board.numRows - newBoard.numInEachColumn[col];
 
@@ -107,59 +136,15 @@ public class Board {
         newBoard.toPlay = opponent;
         newBoard.opponent = toPlay;
 
-        // The index that will be used to read old heuristic values for given [row/col/diags] set
-        int heuIndex = col + (row-1)*numColumns;
+        updateHeuristicForMove(newBoard, row, col);
 
-        // (1) Calculate difference in Heuristic for the friendly pieces
-        int newHeuristic = newBoard.getHeuristicForMove(row, col, toPlay);
-
-        // Check if new board has gameOver, if so we don't need to calculate anything further.
+        // Check if newboard has gameOver, if so we don't need to calculate anything further.
         if(newBoard.gameOver){
-            if(toPlay == 1){
-            newBoard.whiteHeuristic = 1000;
-            newBoard.blackHeuristic = 0;
-            }
-            else{
-                newBoard.whiteHeuristic = 0;
-                newBoard.blackHeuristic = 1000;
-            }
+            newBoard.heuristic = -1000;
             return newBoard;
         }
 
-        newBoard.enemyHeus[heuIndex] = (byte)newHeuristic;
-
-        // The old heuristic from the current board that will be applied to the new board
-        // We use the ENEMY heuristic from the old board, as we are updating the NEW board's friendly value.
-        // As the old board's enemy value = The new board's friendly value.
-        int oldHeuristic = this.enemyHeus[heuIndex];
-        int friendlyHeuristic = (newHeuristic - oldHeuristic);
-
-        //System.out.println("Friendly old: " + oldHeuristic);
-        //System.out.println("Friendly new: " + newHeuristic);
-        //System.out.println("Change: " + friendlyHeuristic);
-
-        // (2) Calculate difference in Heuristic for enemy pieces
-
-        // We use the FRIENDLY heuristic from the OLD board, as we are updating the NEW board's ENEMY value.
-        // As the old board's friendly value = The new board's enemy value.
-        oldHeuristic = this.friendlyHeus[heuIndex];
-        newHeuristic = newBoard.getHeuristicForMove(row, col, opponent);
-        int enemyHeuristic = (newHeuristic - oldHeuristic);
-        
-        newBoard.friendlyHeus[heuIndex] = (byte)newHeuristic;
-
-        //System.out.println("Enemy old: " + oldHeuristic);
-        //System.out.println("Enemy new: " + newHeuristic);
-        //System.out.println("Change: " + enemyHeuristic);
-
-        if(toPlay == 1){
-            newBoard.whiteHeuristic += friendlyHeuristic + this.whiteHeuristic;
-            newBoard.blackHeuristic += enemyHeuristic + this.blackHeuristic;
-        }
-        else{
-            newBoard.whiteHeuristic += enemyHeuristic + this.whiteHeuristic;
-            newBoard.blackHeuristic += friendlyHeuristic + this.blackHeuristic;
-        }
+        //System.out.println("NewBoard Heuristic: " + newBoard.heuristic);
 
         return newBoard;
     }
@@ -324,48 +309,66 @@ public class Board {
     }
 
     public int evaluate(){
-        if(toPlay == 1){
-            return this.whiteHeuristic - this.blackHeuristic;
-        }
-        else{
-            return this.blackHeuristic - this.whiteHeuristic;
-        }
+        return this.heuristic;
     }
 
-    /*
-    private int updateHeuristicForMove(Board oldBoard, int row, int col){
+    // Method to clone an array and invert the signs of every entry
+    public byte[] cloneAndInvert(byte[] originalArray) {
+        byte[] clonedArray = new byte[originalArray.length];
+        for (int i = 0; i < originalArray.length; i++) {
+            clonedArray[i] = (byte)-originalArray[i];
+        }
+        return clonedArray;
+    }
+
+    private void updateHeuristicForMove(Board newBoard, int row, int col){
         
-        int enemyNewTotal = 0;
-        int enemyOldTotal = 0;
-        int friendlyNewTotal = 0;
-        int friendlyOldTotal = 0;
+        // new total for heuristic for row/col/diags
+        int total = 0;
 
-        int result = 0;
+        // now col indexed starting 0, row indexed starting 0
+        row = row - 1;
 
-        // in here, col indexed starting 0, row indexed starting 1 btw
+        // Get old heuristic for this set of rows/cols/diags
+        int oldHeuristic = -this.colH[col] - this.rowH[row];
+
+        int diagPIndex = getDiagP(row, col);
+        int diagNIndex = getDiagN(row, col);
+
+        if(diagPIndex != -1){
+            oldHeuristic -= this.diagPH[diagPIndex];
+        }
+
+        if(diagNIndex != -1){
+            oldHeuristic -= this.diagNH[diagNIndex];
+        }        
 
         // recalculate row
-        int startIndex = 1 + (Board.numColumns + 1) * (row);
+        int startIndex = 1 + (Board.numColumns + 1) * (row + 1);
         int endIndex = startIndex + Board.numColumns;
 
-        result = oldBoard.getHeuristicForSequence_v2(startIndex, endIndex, 1, move);
-        if(result == 100){
-            return 100;
+        int rowResult = -newBoard.getHeuristicForSequence_v2(startIndex, endIndex, 1, newBoard.opponent);
+        if(rowResult == -1000){
+            newBoard.gameOver = true;
+            return;
         }
-        total += result;
+        rowResult += newBoard.getHeuristicForSequence_v2(startIndex, endIndex, 1, newBoard.toPlay);
+        newBoard.rowH[row] = (byte)rowResult;
+
+        total += rowResult;
 
         // recalculate col
         startIndex = col + Board.numColumns + 2;
         int iterator = Board.numColumns + 1;
         endIndex = startIndex + (Board.numRows)*iterator;
-        result = getHeuristicForSequence_v2(startIndex, endIndex, iterator, move);
-        if(result == 100){
-            return 100;
+        int colResult = -newBoard.getHeuristicForSequence_v2(startIndex, endIndex, iterator, newBoard.opponent);
+        if(colResult == -1000){
+            newBoard.gameOver = true;
+            return;
         }
-        total += result;
-
-        // now col indexed starting 0, row indexed starting 0 btw
-        row = row - 1;
+        colResult += newBoard.getHeuristicForSequence_v2(startIndex, endIndex, iterator, newBoard.toPlay);
+        newBoard.colH[col] = (byte)colResult;
+        total += colResult;
 
         // recalculate diag(+) if present
 
@@ -383,11 +386,14 @@ public class Board {
             diagRow = row + b + 1;
             endIndex = 2 + Board.numColumns + diagCol + (diagRow * (Board.numColumns + 1));
             iterator = Board.numColumns;
-            result = getHeuristicForSequence_v2(startIndex, endIndex, iterator, move);
-            if(result == 100){
-                return 100;
+            int diagPResult = -newBoard.getHeuristicForSequence_v2(startIndex, endIndex, iterator, newBoard.opponent);
+            if(diagPResult == -1000){
+                newBoard.gameOver = true;
+                return;
             }
-            total += result;
+            diagPResult += newBoard.getHeuristicForSequence_v2(startIndex, endIndex, iterator, newBoard.toPlay);
+            newBoard.diagPH[diagPIndex] = (byte)diagPResult;
+            total += diagPResult;
         }
 
         // recalculate diag(-) if present
@@ -403,17 +409,20 @@ public class Board {
             diagRow = row + b + 1;
             endIndex = 2 + Board.numColumns + diagCol + (diagRow * (Board.numColumns + 1));
             iterator = Board.numColumns + 2;
-            result = getHeuristicForSequence_v2(startIndex, endIndex, iterator, move);
-            if(result == 100){
-                return 100;
+            int diagNResult = -newBoard.getHeuristicForSequence_v2(startIndex, endIndex, iterator, newBoard.opponent);
+            if(diagNResult == -1000){
+                newBoard.gameOver = true;
+                return;
             }
-            total += result;
+            diagNResult += newBoard.getHeuristicForSequence_v2(startIndex, endIndex, iterator, newBoard.toPlay);
+            newBoard.diagNH[diagNIndex] = (byte)diagNResult;
+            total += diagNResult;
         }
 
-        return total;
+        // total is the new value of the row/col/diags due to the new piece, relative to the new board.
+        newBoard.heuristic -= (oldHeuristic - total);
 
     }
-    */
 
     private int getHeuristicForMove(int row, int col, byte move){
         int total = 0;
