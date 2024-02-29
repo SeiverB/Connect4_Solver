@@ -40,20 +40,22 @@ public class Board {
         ArrayList<Integer> result = new ArrayList<Integer>();
 
         /* old move ordering, from center outwards. 
-        Replaced with better move ordering based on heuristic
+        Replaced with """better""" move ordering based on heuristic
+        */
 
         for(int i = 0; i < numColumns; i++){
             int a = Board.moveOrder[i];
             if(numInEachColumn[a] < numRows){
                 result.add(a);
             }
-        }*/
-
+        }
+        /*
         for(int i = 0; i < numColumns; i++){
             if(numInEachColumn[i] < numRows){
                 result.add(i);
             }
         }
+        */
 
         return result;
     }
@@ -144,8 +146,6 @@ public class Board {
             return newBoard;
         }
 
-        //System.out.println("NewBoard Heuristic: " + newBoard.heuristic);
-
         return newBoard;
     }
     
@@ -167,82 +167,6 @@ public class Board {
         result += "\n";
         return result;
     }
-
-    /*
-    private float getHeuristicForSequence(int start, int end, int iterator, byte move){
-        float adjacencyValues[] = {0f, 0.1f, 0.3f, 0.9f, 0.8f, 3.0f, 6.0f, 12.0f};
-        float rowresult = 0;
-        int numOurs = 0;
-        int length = 0;
-        int lengthSinceOurs = 0;
-        int adjacent = 0;
-        boolean foundOurs = false;
-        for(int i = start; i < end; i = (i + iterator)){
-            byte tileValue = this.board[i];
-
-            // If we go two empty spaces, then consider rest seperate from current
-            if((lengthSinceOurs >= 2) && (length >= 4)){
-                rowresult += adjacencyValues[numOurs];
-                numOurs = 0;
-                length = 1;
-                lengthSinceOurs = 0;
-                foundOurs = false;
-            }
-
-            // If tile is same colour as the move made (currentPlayer)
-            if(tileValue == move){
-                lengthSinceOurs = 0;
-                foundOurs = true;
-                adjacent += 1;
-                numOurs += 1;
-                length += 1;
-            }
-            // If tile is empty, 4-in-a-row may still be possible, increase length without increasing numOurs
-            // adjacent resets.
-            else if(tileValue == 0){
-                length += 1;
-                adjacent = 0;
-                if(foundOurs){
-                    lengthSinceOurs += 1;
-                }
-            }
-            // If tile is enemy and length is less than 4, then 4-in-a-row not possible.
-            else if(length < 4){
-                numOurs = 0;
-                length = 0;
-                lengthSinceOurs = 0;
-                foundOurs = false;
-                adjacent = 0;
-                continue;
-            }
-            // We have reached enemy, but length is at least 4 or greater
-            else{
-                rowresult += adjacencyValues[numOurs];
-                adjacent = 0;
-                numOurs = 0;
-                length = 0;
-                lengthSinceOurs = 0;
-                foundOurs = false;
-            }
-
-            // We have won, return max heuristic value.
-            if(adjacent == 4){
-                this.gameOver = true;
-                return 100f;
-            }
-
-        }
-        // Reached row end
-        // dont forget to add last adjacent if length >= 4.
-        if(length >= 4){
-            rowresult += adjacencyValues[numOurs];
-        }
-
-        float result = rowresult;
-        return result;
-
-    }
-    */
 
     private int getHeuristicForSequence_v2(int start, int end, int iterator, byte move){
         int adjacencyValues[] = {0, 1, 2, 3, 5, 4, 9};
