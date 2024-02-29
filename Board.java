@@ -2,8 +2,6 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedList;
 
 public class Board {
     
@@ -38,62 +36,38 @@ public class Board {
 
     }
 
+    public boolean fastCheckIfWin(int col){
 
-    // Should return a list of moves that create 3-in-a-rows for re-ordering. 
-    public LinkedList<Integer> orderMoves(LinkedList<Integer> moves){
+        int length = 1;
 
-        LinkedList<Integer> results = new LinkedList<Integer>();
+        // Find relevant row that the piece will fall on, accounting for pieces already in the column
+        int row = Board.numRows - this.numInEachColumn[col];
 
-        for(int j = 0; j < moves.size(); j++){
+        // Get the index of where the piece landed
+        int index = 1 + (row) * (Board.numColumns + 1) + col;
 
-            int col = moves.get(j);
-            
-            // Find relevant row that the piece will fall on, accounting for pieces already in the column
-            int row = Board.numRows - this.numInEachColumn[col];
-            int length = 1;
-            boolean firstDir = true;
-
-            // Get the index of where the piece landed
-            int index = 1 + (row) * (Board.numColumns + 1) + col;
-
-            for(int i = 0; i < neighbourOffsets.length; i++){
-                int curOffset = neighbourOffsets[i];
-                int curIndex = index + curOffset;
-                while(board[curIndex] == toPlay){
-                    length++;
-                    if(length == 3){
-                        // There may be a chance to make a three-in-a-row, make this move the front of the list.
-                        moves.remove(j);
-                        moves.addFirst(col);
-                    }
-                    else if(length == 4){
-                        // If we have a winning opportunity, return linked list containing only the winning move
-                        results.add(col);
-                        return results;
-                    }
-                    
-                    curIndex += curOffset;
+        for(int i = 0; i < neighbourOffsets.length; i++){
+            int curOffset = neighbourOffsets[i];
+            int curIndex = index + curOffset;
+            while(curIndex == toPlay){
+                length++;
+                if(length >= 4){
+                    return true;
                 }
-                if(firstDir){
-                    firstDir = false;
-                }
-                else{
-                    firstDir = true;
-                    length = 1;
-                }
+                curIndex += curOffset;
             }
-            
         }
-        // No 4-in-a-rows found, return empty results
-        return results;
+        return false;
     }
 
     // order moves from center, outwards.
-    public LinkedList<Integer> getPossibleMoves(){
+    public ArrayList<Integer> getPossibleMoves(){
 
-        LinkedList<Integer> result = new LinkedList<Integer>();
+        ArrayList<Integer> result = new ArrayList<Integer>();
 
-        // old move ordering, from center outwards. 
+        /* old move ordering, from center outwards. 
+        Replaced with """better""" move ordering based on heuristic
+        */
 
         for(int i = 0; i < numColumns; i++){
             int a = Board.moveOrder[i];
@@ -398,6 +372,7 @@ public class Board {
         newBoard.heuristic -= (oldHeuristic - total);
 
     }
+
 
     public void drawBoard(Graphics g, int x, int y, int width, int height){
         int cellWidth = width / numColumns;

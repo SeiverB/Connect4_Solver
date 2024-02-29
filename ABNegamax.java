@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.LinkedList;
 
 public class ABNegamax {
 
@@ -20,15 +19,13 @@ public class ABNegamax {
         int bestScore = -999999999;
 
         // Go through each move
-        LinkedList<Integer> moves = board.getPossibleMoves();
+        ArrayList<Integer> moves = board.getPossibleMoves();
 
-        // Make new LinkedList for possible 4-in-a-row returns from move orderer
-        LinkedList<Integer> results = new LinkedList<Integer>();
-
-        // Reorder moves for 3-in-a-rows, check if there exists a 4-in-a-row
-        results = board.orderMoves(moves);
-        if(results.size() > 0){
-            moves = results;
+        for(int i = 0; i < moves.size(); i++){
+            int curMove = moves.get(i);
+            if(board.fastCheckIfWin(curMove)){
+                return new ScoreMove(1000, curMove);
+            }
         }
 
         for(int i = 0; i < moves.size(); i++){

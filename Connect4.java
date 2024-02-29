@@ -5,7 +5,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.ArrayList; // For arbitrary size lists 
-import java.util.LinkedList;
 
 public class Connect4 extends JPanel implements MouseListener, MouseMotionListener{
     
@@ -51,7 +50,7 @@ public class Connect4 extends JPanel implements MouseListener, MouseMotionListen
     public void startGame(){
         this.board = new Board();
         this.board.initializeValues();
-        this.negamax = new ABNegamax(15);
+        this.negamax = new ABNegamax(12);
 
     }
 
@@ -79,7 +78,7 @@ public class Connect4 extends JPanel implements MouseListener, MouseMotionListen
 
     public Boolean checkValidMove(int move){
         Boolean validMove = false;
-        LinkedList<Integer> moves = this.board.getPossibleMoves();
+        ArrayList<Integer> moves = this.board.getPossibleMoves();
         for(int i = 0; i < moves.size(); i++){
             if(move == moves.get(i)){
                 validMove = true;
@@ -105,7 +104,7 @@ public class Connect4 extends JPanel implements MouseListener, MouseMotionListen
             move = result.bestMove;
             this.negamax.maxDepth = temp;
             if(move == null){
-                LinkedList<Integer> moves = this.board.getPossibleMoves();
+                ArrayList<Integer> moves = this.board.getPossibleMoves();
                 move = moves.get(0);
             }
         }
