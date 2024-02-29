@@ -50,7 +50,7 @@ public class Connect4 extends JPanel implements MouseListener, MouseMotionListen
     public void startGame(){
         this.board = new Board();
         this.board.initializeValues();
-        this.negamax = new ABNegamax(9);
+        this.negamax = new ABNegamax(12);
 
     }
 
@@ -151,7 +151,7 @@ public class Connect4 extends JPanel implements MouseListener, MouseMotionListen
         mousex = e.getX();
         mousey = e.getY();
         int localx = Math.clamp(mousex - boardx, 0, WINDOW_WIDTH);
-        int column = (int)Math.floor(((float)localx / (float)boardwidth) * (float)board.numColumns);
+        int column = (int)Math.floor(((float)localx / (float)boardwidth) * (float)Board.numColumns);
 
         if(gameState != 0){
             resetGame();
