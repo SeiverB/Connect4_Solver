@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 public class ABNegamax {
 
@@ -10,7 +11,7 @@ public class ABNegamax {
     
     public ScoreMove getBestMove(Board board, int currentDepth, int alpha, int beta){
 
-        // Check i` done recursing
+        // Check if done recursing
         if(board.gameOver || (currentDepth == this.maxDepth)){
             return new ScoreMove(board.evaluate(), null);
         }
@@ -19,16 +20,20 @@ public class ABNegamax {
         int bestScore = -999999999;
 
         // Go through each move
-        ArrayList<Integer> moves = board.getPossibleMoves();
+        LinkedList<Integer> moves = board.getPossibleMoves();
+
+        // Make new LinkedList for possible 4-in-a-row returns from move orderer
+        LinkedList<Integer> results = new LinkedList<Integer>();
+
+        // Reorder moves for 3-in-a-rows, check if there exists a 4-in-a-row
+        results = board.orderMoves(moves);
+        if(results.size() > 0){
+            moves = results;
+        }
 
         for(int i = 0; i < moves.size(); i++){
             int move = moves.get(i);
             Board newBoard = board.makeMove(move);
-            
-            // Immediately prune result if a winning move is playable
-            if(newBoard.gameOver == true){
-                return new ScoreMove(1000, move);
-            }
 
             // Recurse
             ScoreMove result = getBestMove(newBoard, currentDepth + 1, -beta, -Math.max(alpha, bestScore));

@@ -2,6 +2,8 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedList;
 
 public class Board {
     
@@ -30,18 +32,69 @@ public class Board {
     // Used for ordering moves from center, outwards.
     public static int[] moveOrder = {3, 4, 2, 5, 1, 6, 0};
 
+    public static int[] neighbourOffsets = {1, -1, Board.numColumns + 1, -Board.numColumns - 1, Board.numColumns, -Board.numColumns, -Board.numColumns - 2, Board.numColumns + 2};
+
     Board(){
 
     }
 
+
+    // TODO: Implement functionality for this to also detect 3-in-a-rows
+    // Should return a list of moves that create 3-in-a-rows for re-ordering. 
+    public LinkedList<Integer> orderMoves(LinkedList<Integer> moves){
+
+        LinkedList<Integer> results = new LinkedList<Integer>();
+
+        for(int j = 0; j < moves.size(); j++){
+
+            int col = moves.get(j);
+            
+            // Find relevant row that the piece will fall on, accounting for pieces already in the column
+            int row = Board.numRows - this.numInEachColumn[col];
+            int length = 1;
+            boolean firstDir = true;
+
+            // Get the index of where the piece landed
+            int index = 1 + (row) * (Board.numColumns + 1) + col;
+
+            for(int i = 0; i < neighbourOffsets.length; i++){
+                int curOffset = neighbourOffsets[i];
+                int curIndex = index + curOffset;
+                while(board[curIndex] == toPlay){
+                    length++;
+                    if(length == 3){
+                        // There may be a chance to make a three-in-a-row, make this move the front of the list.
+                        moves.remove(j);
+                        moves.addFirst(col);
+                    }
+                    else if(length == 4){
+                        // If we have a winning opportunity, return linked list containing only the winning move
+                        results.add(col);
+                        return results;
+                    }
+                    
+                    curIndex += curOffset;
+                }
+                if(firstDir){
+                    firstDir = false;
+                }
+                else{
+                    firstDir = true;
+                    length = 1;
+                }
+            }
+            
+        }
+        // No 4-in-a-rows found, return empty results
+        return results;
+    }
+
     // order moves from center, outwards.
-    public ArrayList<Integer> getPossibleMoves(){
+    public LinkedList<Integer> getPossibleMoves(){
 
-        ArrayList<Integer> result = new ArrayList<Integer>();
+        LinkedList<Integer> result = new LinkedList<Integer>();
 
-        /* old move ordering, from center outwards. 
-        Replaced with """better""" move ordering based on heuristic
-        */
+        // old move ordering, from center outwards. 
 
         for(int i = 0; i < numColumns; i++){
             int a = Board.moveOrder[i];
@@ -148,7 +201,6 @@ public class Board {
 
         return newBoard;
     }
-    
 
     public String toString(){
         String result = "";
@@ -347,82 +399,6 @@ public class Board {
         newBoard.heuristic -= (oldHeuristic - total);
 
     }
-
-    private int getHeuristicForMove(int row, int col, byte move){
-        int total = 0;
-        int result = 0;
-
-        // in here, col indexed starting 0, row indexed starting 1 btw
-
-        // recalculate row
-        int startIndex = 1 + (Board.numColumns + 1) * (row);
-        int endIndex = startIndex + Board.numColumns;
-
-        result = getHeuristicForSequence_v2(startIndex, endIndex, 1, move);
-        if(result == 1000){
-            return 1000;
-        }
-        total += result;
-        
-        // recalculate col
-        startIndex = col + Board.numColumns + 2;
-        int iterator = Board.numColumns + 1;
-        endIndex = startIndex + (Board.numRows)*iterator;
-        result = getHeuristicForSequence_v2(startIndex, endIndex, iterator, move);
-        if(result == 1000){
-            return 1000;
-        }
-        total += result;
-
-        // now col indexed starting 0, row indexed starting 0 btw
-        row = row - 1;
-
-        // recalculate diag(+) if present
-
-        // How many cells are diagonally going up right
-        int a = Math.min(numColumns - (col + 1), row);
-        // How many cells are diagonally going down left
-        int b = Math.min(numRows - (row + 1), col);
-
-        // If we have 4 diagonal tiles, including current tile
-        if((a + b + 1) >= 4){
-            int diagCol = col + a;
-            int diagRow = row - a;
-            startIndex = 2 + Board.numColumns + diagCol + (diagRow * (Board.numColumns + 1));
-            diagCol = col - b - 1;
-            diagRow = row + b + 1;
-            endIndex = 2 + Board.numColumns + diagCol + (diagRow * (Board.numColumns + 1));
-            iterator = Board.numColumns;
-            result = getHeuristicForSequence_v2(startIndex, endIndex, iterator, move);
-            if(result == 1000){
-                return 1000;
-            }
-            total += result;
-        }
-
-        // recalculate diag(-) if present
-        // How many cells are diagonally going up left
-        a = Math.min(col, row);  
-        // How many cells are diagonally going down right
-        b = Math.min(numRows - (row + 1), numColumns - (col+1));
-        if((a + b + 1) >= 4){
-            int diagCol = col - a;
-            int diagRow = row - a;
-            startIndex = 2 + Board.numColumns + diagCol + (diagRow * (Board.numColumns + 1));
-            diagCol = col + b + 1;
-            diagRow = row + b + 1;
-            endIndex = 2 + Board.numColumns + diagCol + (diagRow * (Board.numColumns + 1));
-            iterator = Board.numColumns + 2;
-            result = getHeuristicForSequence_v2(startIndex, endIndex, iterator, move);
-            if(result == 1000){
-                return 1000;
-            }
-            total += result;
-        }
-
-        return total;
-    }
-
 
     public void drawBoard(Graphics g, int x, int y, int width, int height){
         int cellWidth = width / numColumns;
